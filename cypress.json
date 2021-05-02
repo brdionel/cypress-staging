@@ -1,0 +1,7 @@
+{
+    "baseUrl": "https://mc-staging.lentesplus.com/admin",
+    "scrollBehavior": "nearest",
+    "env": {
+        
+    }
+}
