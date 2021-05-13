@@ -29,3 +29,15 @@ Cypress.Commands.add('login', (username, password) => {
     cy.get('#login').type(password, {log: false})
     cy.get('.action-login').click()
 })
+
+Cypress.Commands.add('searchCustomerByEmail', email => {
+    cy.get('[data-bind="afterRender: $data.setToolbarNode"] > :nth-child(1) > .data-grid-search-control-wrap > #fulltext').clear().type(`${email}{enter}`)
+    cy.get('.data-row > :nth-child(4) > .data-grid-cell-content')
+        .should('contain', email)
+
+    cy.wait(5000)
+    cy.scrollTo(0,100, {duration:2000})
+    cy.get('[data-role="grid-wrapper"]')
+        .scrollTo('right', {duration: 4000})
+    cy.get('.data-grid-actions-cell > .action-menu-item').click()  
+})

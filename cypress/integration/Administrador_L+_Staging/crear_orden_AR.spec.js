@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 
 import {username, password} from "../../fixtures/magentoUser.json"
+import {extractUrl} from '../../support/helpers'
 
 Cypress.on('uncaught:exception', (err, runnable) => {
     // returning false here prevents Cypress from
@@ -10,11 +11,7 @@ Cypress.on('uncaught:exception', (err, runnable) => {
 
 describe('Generar Orden de Compra desde el admin en AR - en Staging - ', () => {
 
-    // beforeEach(() =>{
-    //     cy.intercept("POST","https://mc-staging.lentesplus.com/admin/sales/order_create/**").as('createOrder')
-    // })
-
-    it('Generar Orden de Compra desde el admin en AR', () => {
+    it('Generar Orden de Compra desde el admin en AR - Customer desde cero', () => {
 
         cy.visit('/')
         cy.login(username, password)
@@ -40,94 +37,123 @@ describe('Generar Orden de Compra desde el admin en AR - en Staging - ', () => {
         
         cy.get(':nth-child(3) > .admin__field-control > .nested > .admin__field > .admin__field-label').click()
 
-        cy.wait(70000)
+        cy.wait(90000)
 
         cy.get('#add_products').click()
 
+        cy.scrollTo(0, 400, {duration: 2000})
         cy.get('#sales_order_create_search_grid_filter_entity_id').type('868{enter}')
-        cy.wait(2000)
-
-        cy.get('#sales_order_create_search_grid_table > tbody > .even > .col-name').contains('Renu Fresh 60ml').click()
-
+        cy.wait(8000)
+        cy.get('#sales_order_create_search_grid_table')
+        cy.get('#sales_order_create_search_grid_table > tbody tr').click()
+        cy.scrollTo(0, 200, {duration: 2000})
         cy.get('#order-search > .admin__page-section-title button').click()
-
+        
         cy.wait(7000)
-
-        cy.get('#email').type('hugobalassone@gmail.com')
+        
+        cy.scrollTo(0, 600, {duration: 2000})
+        cy.get('#email').type('hugorbalassone@gmail.com')
         cy.get('#id_type').select('DNI')
         cy.get('#id_number').type('32553431')
 
+        cy.scrollTo(0, 1100, {duration: 2000})
         cy.get('#order-billing_address_firstname').type('Hugo Roberto')
+        cy.scrollTo(0, 1500, {duration: 2000})
         cy.get('#order-billing_address_lastname').type('Balassone')
-
         cy.get('#order-billing_address_street0').type('Av. Gral Las Heras')
-
+        cy.scrollTo(0, 1900, {duration: 2000})
         cy.get('#order-billing_address_region_id').select('Capital Federal')
         cy.get('#order-billing_address_city').type('Capital Federal')
         cy.get('#order-billing_address_postcode').type('1000')
         cy.get('#order-billing_address_telephone').type('+5491166811919')
+        cy.scrollTo(0, 2500, {duration: 2000})
         cy.get('#order-billing_address_address_ext_number').type('123')
 
+        cy.scrollTo(0, 3100, {duration: 2000})
         cy.get('#order-billing_method_summary > .action-default > span').trigger('click')
         cy.wait(10000)
         cy.get('.admin__payment-methods > :nth-child(3) > .admin__field-label').click()
-
         cy.get('#order-shipping-method-summary > .action-default > span').click()
         cy.wait(7000)
         cy.get(':nth-child(2) > .admin__order-shipment-methods-options-list > .admin__field-option > .admin__field-label').click()
 
         cy.wait(5000)
         cy.get('#submit_order_top_button').click()
-        // // assert Create new order for new customer
-        // cy.contains('Create New Order for New Customer').should('be.visible')
+        cy.get('.admin__payment-methods > :nth-child(11) > .admin__field-label').click()
+        cy.get('#submit_order_top_button').click()
 
-        // // cy.contains('button', 'Search').click()
-        // cy.get('#sales_order_create_customer_grid_filter_entity_id').type('703408').type('{enter}')
-        // cy.wait(3000)
-        // cy.get('#sales_order_create_customer_grid_table > tbody').contains('703408').click()
-    
-        // cy.wait(8000)
-        // cy.get(':nth-child(3) > .admin__field-control > .nested > .admin__field > .admin__field-label').click()
+        cy.get('div[data-ui-id="messages-message-success"]')
+            .should('contain', 'You created the order.')
+
+        cy.scrollTo(0, 300, {duration: 2000})
+        cy.wait(1500)
+        cy.get('table.order-information-table #order_status')
+            .should('contain', 'Pago Pendiente')
+
+        // Website
+        cy.get('.order-information > .admin__page-section-item-content > .admin__table-secondary > tbody > :nth-child(3) > td')
+            .should('contain', 'Argentina Website')
         
-        // cy.wait(74000)
-        // cy.get('#add_products').click()
-        // cy.get('#sales_order_create_search_grid_table > tbody').contains('868').click()
-        // cy.get('#order-search > .admin__page-section-title > .actions').contains('Add Selected Product(s) to Order').click()
-    
-        // cy.wait(4000)
+        // Nombre usuario
+        cy.get('.order-account-information > .admin__page-section-item-content > .admin__table-secondary > tbody > :nth-child(1) > td')
+            .should('contain', 'Hugo Roberto Balassone')
 
-        // cy.get('#order-billing_address_firstname').clear().type('Hugo')
-        // cy.get('#order-billing_address_lastname').clear().type('Albertengo')
-        // cy.get('#order-billing_address_street0').clear().type('La Trinidad')
-        // cy.get('#order-billing_address_region_id').select('Buenos Aires')
-        // cy.get('#order-billing_address_city').clear().type('La Trinidad')
-        // cy.get('#order-billing_address_postcode').clear().type('6027')
-        // cy.get('#order-billing_address_telephone').clear().type('+549626256165')
-        // cy.get('#order-billing_address_address_ext_number').clear().type('321')
+        // Email
+        cy.get('.admin__table-secondary > tbody > :nth-child(2) > td > a')
+            .should('contain', 'hugorbalassone@gmail.com')
+        
+        // Customer Group
+        cy.get('.order-account-information > .admin__page-section-item-content > .admin__table-secondary > tbody > :nth-child(3) > td')
+            .should('contain', 'Lead no activo')
+        
+        // Tipo identificacion
+        cy.get('.order-account-information > .admin__page-section-item-content > .admin__table-secondary > tbody > :nth-child(4) > td')
+            .should('contain', 'DNI')
 
-        // //cy.get('#order-billing_method_summary > a').trigger('click')
-        // //cy.get('#order-shipping-method-summary > .action-default').contains('Get available payment methods').click()
-        // cy.get('#order-billing_method_summary > .action-default > span').trigger('click')
-        // cy.wait(10000)
-        // cy.get('.admin__payment-methods').contains('Lentesplus - Url de Pago').click({ force: true })
-        // cy.wait(2000)
-        // cy.get('#order-shipping-method-summary > .action-default').contains('Get shipping methods and rates').trigger('click')
-        // cy.get(':nth-child(2) > .admin__order-shipment-methods-options-list > .admin__field-option > .admin__field-label').click()
-        // cy.get('#submit_order_top_button').click()
-        // cy.wait(3000)
-        // cy.get('.admin__payment-methods > :nth-child(11) > .admin__field-label').click()
-        // cy.get('#submit_order_top_button').click()
+        // Nro DNI
+        cy.get('.order-account-information > .admin__page-section-item-content > .admin__table-secondary > tbody > :nth-child(5) > td')
+            .should('contain', '32553431')
+        
+        cy.scrollTo(0, 900, {duration: 2000})
+        cy.wait(1500)
+        // Metodo de Pago
+        cy.get('.order-payment-method-title')
+            .should('contain', 'Lentesplus - Url de Pago  ')
 
-        // // Assert orden created
-        // cy.get('.messages > .message')
-        //     .should('contain', 'You created the order.')
-        //     .should('have.class', 'success')
+        cy.scrollTo(0, 1900, {duration: 2000})
+        cy.wait(1500)
+        // Ultimo estado historial
+        cy.get('#order_history_block > .note-list > :nth-child(1) > .note-list-status')
+            .should('contain', 'Pago Pendiente') 
 
-        // cy.get('.order-account-information > .admin__page-section-item-content > .admin__table-secondary > tbody > :nth-child(1) > td')
-        //     .should('contain', 'Hugo Bombas')
+        // Precio Total
+        cy.get('.col-3 > :nth-child(2) > strong > .price')
+            .should('contain', '$250.00')
 
-        // cy.get('.order-payment-method-title')
-        //     .should('contain', 'Lentesplus - Url de Pago')
+            // Generar Url de pago
+        cy.get('.page-main-actions').contains('Generate URL Pay').click()
 
+        cy.get('.messages > .message')
+            .should('have.class', 'message-success')
+
+        cy.get('.message > div')
+            .should('contain', 'The url pay is in the next link')
+
+        // Obtengo URL
+        cy.get('.message > div').then(($message) => {
+            
+            const url = extractUrl($message.text())
+            cy.log(url)
+
+            // Voy hacia la URL de pago
+            cy.visit(url)
+
+            cy.url()
+                .should('include', '/ar/checkout/')
+            cy.get('.base')
+                .should('contain', 'Finaliza tu compra')
+
+        })
     })
+
 })

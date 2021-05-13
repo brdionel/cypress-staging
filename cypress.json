@@ -1,6 +1,8 @@
 {
     "baseUrl": "https://mc-staging.lentesplus.com/admin",
     "scrollBehavior": "nearest",
+    "numTestsKeptInMemory": 0,
+    "pageLoadTimeout": 100000,
     "env": {
         
     }
